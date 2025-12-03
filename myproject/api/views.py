@@ -1,29 +1,36 @@
-from django.shortcuts import render
 from .models import Book,Author
-from django.http import JsonResponse
-
+from .serializers import BookSerializer,AuthorSerializer,BookWithAuthorSerializer
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework import status
 # Create your views here.
-def list_books(request):
-    books = Book.objects.all()
-    data =[]
-    for b in books:
-        data.append({
-            "title":b.title,
-            "pages":b.pages,
-            "author":b.author,
-            "year":b.year
-        })
-    
-    return JsonResponse(data,safe=False)
 
+@api_view(["GET","POST"])
+def list_books(request):
+    if request.method=="GET":
+        books = Book.objects.all()
+        serializer = BookWithAuthorSerializer(books,many=True)
+        return Response(serializer.data)
+    if request.method=="POST":
+        serializer = BookSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET","POST"])
 def list_authors(request):
-    authors = Author.objects.all()
-    data =[]
-    for a in authors:
-        data.append({
-            "name":a.name,
-            "email":a.email,
-            "birth_year":a.birth_year
-        })
-    
-    return JsonResponse(data,safe=False)
+    if request.method=="GET":
+        authors = Author.objects.all()
+        serializer = AuthorSerializer(authors,many=True)
+        return Response(serializer.data)
+    if request.method=="POST":
+        serializer = AuthorSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+

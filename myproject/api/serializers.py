@@ -26,7 +26,7 @@ class BookSerializer(serializers.ModelSerializer):
     def validate(self,data):
         new_title=data.get("title")
         if len(new_title)<2:
-            raise serializers.ValidationError("לא ניתן להכניס ספר עם כותרת הקצרה מ10 תווים")
+            raise serializers.ValidationError("לא ניתן להכניס ספר עם כותרת הקצרה מ2 תווים")
         new_pages=data.get("pages")
         if (new_title[0]=="a" or new_title[0]=="A") and new_pages<25:
             raise serializers.ValidationError("לא ניתן להכניס ספר עם כותרת שמתחילה באות a/A וגם שיהיה קצר מ25 עמודים")
@@ -40,6 +40,6 @@ class BookWithAuthorSerializer(serializers.ModelSerializer):
     author=AuthorSerializer()
     class Meta:
         model = Book
-        fields=["id","title","pages","year","author"]
+        fields=["id","title","pages","year","author","categories"]
 
 

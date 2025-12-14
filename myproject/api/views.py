@@ -1,4 +1,4 @@
-from .models import Book,Author
+from .models import Book,Author,Category
 from .serializers import BookSerializer,AuthorSerializer,BookWithAuthorSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -59,6 +59,24 @@ def books_by_author_birth_year(request,year):
     books = Book.objects.filter(author__birth_year__gte=year)
     serializer = BookWithAuthorSerializer(books,many=True)
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+def add_category_to_book(request,book_id):
+    book = get_object_or_404(Book,pk=book_id)
+    cat_id = request.data.get("category_id")
+    category = get_object_or_404(Category,pk=cat_id)
+    book.categories.add(category)
+    return Response({'message': f'Category {category.name} added to {book.title}'})
+
+@api_view(["POST"])
+def remove_category_to_book(request,book_id):
+    book = get_object_or_404(Book,pk=book_id)
+    cat_id = request.data.get("category_id")
+    category = get_object_or_404(Category,pk=cat_id)
+    book.categories.remove(category)
+    return Response({'message': f'Category {category.name} removed from {book.title}'})
+
 
 
 @api_view(["GET"])

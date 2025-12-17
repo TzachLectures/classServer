@@ -4,10 +4,25 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 # Create your views here.
 
 @api_view(["GET","POST"])
 def list_books(request):
+    year = request.query_params.get("year")
+    pages = request.query_params.get("pages")
+    q=request.query_params.get("q")
+
+    if request.method=="GET" and q:
+        query = Q(title__icontains=q) | Q(author__name__icontains=q)
+        books = Book.objects.filter(query)
+        serializer = BookWithAuthorSerializer(books,many=True)
+        return Response(serializer.data)
+    if request.method=="GET" and year and pages:
+        query = Q(year__gt=year) | Q(pages__gt=pages)
+        books = Book.objects.filter(query)
+        serializer = BookWithAuthorSerializer(books,many=True)
+        return Response(serializer.data)
     if request.method=="GET":
         books = Book.objects.all()
         serializer = BookWithAuthorSerializer(books,many=True)
@@ -59,6 +74,19 @@ def books_by_author_birth_year(request,year):
     books = Book.objects.filter(author__birth_year__gte=year)
     serializer = BookWithAuthorSerializer(books,many=True)
     return Response(serializer.data)
+
+@api_view(["GET"])
+def books_by_category(request,categoryId):
+    #Solution 1
+    # category = get_object_or_404(Category,pk=categoryId)
+    # books_from_this_category = category.books
+    # serializer = BookWithAuthorSerializer(books_from_this_category,many=True)
+
+    #Solution 2
+    books_from_this_category= Book.objects.filter(categories__id=categoryId)
+    serializer = BookWithAuthorSerializer(books_from_this_category,many=True)
+    return Response(serializer.data)
+
 
 
 @api_view(["POST"])
@@ -115,4 +143,22 @@ def list_categories(request):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
+from django.db.models import Sum,Count
 
+@api_view(["GET"])
+def getTotalPages(request):
+    sumPages = Book.objects.aggregate(total_pages=Sum("pages"))
+    return Response(sumPages)
+
+
+@api_view(["GET"])
+def authors_books(request):
+    authors = Author.objects.annotate(num_books=Count("books"))
+    data = []
+    for author in authors:
+        data.append({
+            'name':author.name,
+            "books_count":author.num_books
+        })
+
+    return Response(data)

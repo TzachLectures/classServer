@@ -20,6 +20,7 @@ class Book(models.Model):
     pages = models.IntegerField()
     year=models.IntegerField()
     is_best_seller =models.BooleanField(default=False)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
     author = models.ForeignKey(Author,on_delete=models.CASCADE,related_name="books")
     categories = models.ManyToManyField(Category,related_name="books")
 

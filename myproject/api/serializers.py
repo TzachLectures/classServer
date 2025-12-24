@@ -23,6 +23,6 @@ class BookWithAuthorSerializer(serializers.ModelSerializer):
     author=AuthorSerializer()
     class Meta:
         model = Book
-        fields=["id","title","pages","year","author","categories"]
+        fields="__all__"
 
 

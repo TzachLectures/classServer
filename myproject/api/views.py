@@ -1,5 +1,5 @@
 from .models import Book,Author,Category
-from .serializers import BookSerializer,AuthorSerializer,BookWithAuthorSerializer,CategorySerializer
+from .serializers import BookSerializer,AuthorSerializer,BookWithAuthorSerializer,CategorySerializer,UserProfileSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
@@ -11,6 +11,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
 # Create your views here.
+
+
+@api_view(["POST"])
+def register(request):
+    serializer = UserProfileSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(["GET","POST"])
 def list_books(request):
@@ -174,8 +185,7 @@ def predict_book_price(request):
     is_best_seller = request.data.get("is_best_seller")
     pages = request.data.get("pages")
 
-    df = pd.read_json('modelData/books.json')
-    # 1. הסרת עמודת id
+    df = pd.read_json(r'C:\Users\benny\Desktop\האקריו\W271024ER\django\class3\projectFromGit\classServer\myproject\api\modelData\books.json')    # 1. הסרת עמודת id
     df = df.drop('id', axis=1)
 
     # 2. פירוק עמודת author לעמודות author_id ו-author_birth_year והסרת עמודת author המקורית
@@ -190,11 +200,7 @@ def predict_book_price(request):
     # 4. המרת עמודת is_best_seller לבוליאנית למספרים (1 או 0)
     df['is_best_seller'] = df['is_best_seller'].astype(int)
 
-    # יצירת DataFrame חדש עם הקלט
-    new_book_data = pd.DataFrame({
-        'is_best_seller': [is_best_seller],
-        'pages': [pages]
-    })
+
     author_id_encoded = pd.get_dummies(df['author_id'], prefix='author_id')
     df = pd.concat([df, author_id_encoded], axis=1)
     df.drop('author_id', axis=1, inplace=True)
@@ -222,17 +228,25 @@ def predict_book_price(request):
 
     y_scaler = MinMaxScaler()
     y_scaled = y_scaler.fit_transform(y)
-     # סקאלינג של הנתונים החדשים באמצעות הסקיילר שאומן בעבר
-    scaled_new_book_data = x_scaler.transform(new_book_data)
+
+
 
     X_train, X_test, y_train, y_test = train_test_split(x_scaled, y_scaled, test_size=0.3, random_state=1234)
     model = LinearRegression()
     model.fit(X_train,y_train)
 
+
+        # יצירת DataFrame חדש עם הקלט
+    new_book_data = pd.DataFrame({
+        'is_best_seller': [is_best_seller],
+        'pages': [pages]
+    })
+     # סקאלינג של הנתונים החדשים באמצעות הסקיילר שאומן בעבר
+    scaled_new_book_data = x_scaler.transform(new_book_data)
     # חיזוי המחיר המוסקל
     predicted_price_scaled = model.predict(scaled_new_book_data)
 
     # החזרת המחיר המוסקל למחיר המקורי
     predicted_price = y_scaler.inverse_transform(predicted_price_scaled)
 
-    return predicted_price[0][0]
+    return Response( {"price": predicted_price[0][0]})

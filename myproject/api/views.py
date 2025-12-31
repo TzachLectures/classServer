@@ -9,7 +9,8 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 # Create your views here.
 
 
@@ -24,6 +25,7 @@ def register(request):
 
 
 @api_view(["GET","POST"])
+@permission_classes([IsAuthenticated])
 def list_books(request):
     year = request.query_params.get("year")
     pages = request.query_params.get("pages")

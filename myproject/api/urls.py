@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import list_books,list_authors,book_details,author_details,books_by_year,books_by_author,books_by_author_birth_year,add_category_to_book,remove_category_to_book,list_categories,books_by_category,getTotalPages,authors_books,predict_book_price,register
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path("books/", list_books),
@@ -16,5 +17,7 @@ urlpatterns = [
     path("sumpages/",getTotalPages),
     path("authorsbooks/",authors_books),
     path("predict/",predict_book_price),
-    path("users/register/",register)
+    path("users/register/",register),
+    path("login/", TokenObtainPairView.as_view()),
+    path("token/refresh/", TokenRefreshView.as_view()),
 ]

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import list_books,list_authors,book_details,author_details,books_by_year,books_by_author,books_by_author_birth_year,add_category_to_book,remove_category_to_book,list_categories,books_by_category,getTotalPages,authors_books,predict_book_price,register
+from .views import list_books,list_authors,book_details,author_details,books_by_year,books_by_author,books_by_author_birth_year,add_category_to_book,remove_category_to_book,list_categories,books_by_category,getTotalPages,authors_books,predict_book_price,register,ProductListCreate,ProductDetail,example_for_env_variables
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -20,4 +20,7 @@ urlpatterns = [
     path("users/register/",register),
     path("login/", TokenObtainPairView.as_view()),
     path("token/refresh/", TokenRefreshView.as_view()),
+    path("products/", ProductListCreate.as_view()),
+    path("products/<int:pk>/", ProductDetail.as_view()),
+    path("example/", example_for_env_variables),
 ]

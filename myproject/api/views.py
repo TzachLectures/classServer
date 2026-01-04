@@ -11,6 +11,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
+from rest_framework.generics import ListCreateAPIView
+from .models import Product
+from .serializers import ProductSerializer
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+from decouple import config
 # Create your views here.
 
 
@@ -252,3 +259,27 @@ def predict_book_price(request):
     predicted_price = y_scaler.inverse_transform(predicted_price_scaled)
 
     return Response( {"price": predicted_price[0][0]})
+
+
+
+class ProductListCreate(ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend,filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['name', 'description','category']
+    search_fields = ['name', 'description','category']
+    ordering_fields = ['price', 'quantity']
+    ordering = ['-price']
+
+
+
+
+class ProductDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+@api_view(["GET"])
+def example_for_env_variables(request):
+    app_name = config("APPNAME",default="Default App Name")
+    return Response({"message": app_name})

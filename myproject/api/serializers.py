@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book,Author,Category,UserProfile
+from .models import Book,Author,Category,UserProfile,Product    
 from django.contrib.auth.models import User
 from django.db import transaction
 
@@ -45,4 +45,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
             profile = UserProfile.objects.create(user=user,**validated_data)
         return profile
+
+   
        
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields="__all__"
